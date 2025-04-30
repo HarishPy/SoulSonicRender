@@ -1,21 +1,48 @@
+const lastOffsets = {
+    happy: null,
+    sad: null,
+    chill: null,
+    energetic: null
+};
+
+const BASE_URL = window.location.hostname === 'localhost' ?
+    'http://localhost:3001' :
+    'https://soulsonick.onrender.com';
+
 async function getAccessToken() {
-    const response = await fetch('http://localhost:3001/token');
+    const response = await fetch(`${BASE_URL}/token`);
     const data = await response.json();
     return data.token;
 }
 
+
+// async function getAccessToken() {
+//     const response = await fetch('https://soulsonick.onrender.com/token');
+//     const data = await response.json();
+//     return data.token;
+// }
+
 async function fetchTracksByMood(mood) {
     const token = await getAccessToken();
 
-    const response = await fetch(`https://api.spotify.com/v1/search?q=${mood}&type=track&limit=6`, {
+    // Retry until new offset is different from last
+    let newOffset;
+    do {
+        newOffset = Math.floor(Math.random() * 100); // max ~200 results total
+    } while (newOffset === lastOffsets[mood]);
+
+    lastOffsets[mood] = newOffset; // store the new offset
+
+    const response = await fetch(`https://api.spotify.com/v1/search?q=${mood}&type=track&limit=6&offset=${newOffset}`, {
         headers: {
             'Authorization': 'Bearer ' + token
         }
     });
 
     const data = await response.json();
-    return data.tracks.items; // Array of track objects
+    return data.tracks.items;
 }
+
 
 
 fetchTracksByMood("happy").then(tracks => {

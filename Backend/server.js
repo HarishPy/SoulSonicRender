@@ -9,6 +9,8 @@ const PORT = 3001;
 
 app.use(cors());
 
+console.log("Received request for /token");
+
 app.get('/token', async(req, res) => {
     const clientId = process.env.CLIENT_ID;
     const clientSecret = process.env.CLIENT_SECRET;
